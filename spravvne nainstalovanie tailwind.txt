@@ -1,0 +1,74 @@
+npm create vite@latest promptmate -- --template react
+cd promptmate
+npm install
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p -------> toto namiesto npm install -D tailwindcss@3.4.15 --registry=https://registry.npmjs.org/
+# uprav tailwind.config.js aby content zahŕňal ./index.html a ./src/**/*.{js,jsx,ts,tsx}
+# nahraď src/App.jsx a src/main.jsx vyššie uvedeným kódom
+npm run dev
+
+github
+
+✅ 1. Ako PUSHOVAŤ zmeny do jakubprojekt1.0
+
+Uisti sa, že si na tejto branche:
+
+git checkout jakubprojekt1.0
+
+
+Potom, keď niečo upravíš, vždy spravíš:
+
+git add .
+git commit -m "tvoj popis zmeny"
+git push -u origin jakubprojekt1.0
+
+
+➡️ Toto odošle tvoje zmeny do GitHubu do tejto konkrétnej branch.
+
+✅ 2. Ako MERGNÚŤ jakubprojekt1.0 → main
+👉 2.1 Najlepší spôsob: cez GitHub (Pull Request)
+
+Choď na GitHub repo
+
+Uvidíš tlačidlo "Compare & pull request" (ak si pushol zmeny)
+
+Klikni na Create pull request
+
+Skontroluj zmeny
+
+Klikni Merge pull request
+
+Toto je profesionálny spôsob.
+
+👉 2.2 Mergnutie cez VS Code / terminál (ak nechceš PR)
+
+Najprv prepi sa na main:
+
+git checkout main
+
+
+Stiahni čerstvé zmeny:
+
+git pull
+
+
+A teraz merge:
+
+git merge jakubprojekt1.0
+
+
+Potom pushni do main:
+
+git push
+
+🧼 3. Po mergnutí môžeš branch odstrániť
+
+Ak už nie je potrebná:
+
+Lokálne:
+git branch -d jakubprojekt1.0
+
+Na GitHube:
+git push origin --delete jakubprojekt1.0
+
+

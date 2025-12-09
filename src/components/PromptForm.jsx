@@ -122,6 +122,7 @@ export default function PromptForm({
         value={form.tone}
         onChange={handleChange("tone")}
         suggestions={TONE_SUGGESTIONS}
+        multiSelect={true}
       />
 
       <SuggestionInput
