@@ -52,7 +52,7 @@ export default function App() {
       persona: "",
       task: "",
       goal: "",
-      tone: "",
+      tone: [],
       output: "",
     });
     setCot(false);
