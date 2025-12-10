@@ -12,7 +12,7 @@ export default function App() {
     persona: "",
     task: "",
     goal: "",
-    tone: "",
+    tone: [],
     output: "",
   });
   const [cot, setCot] = useState(false);
@@ -126,33 +126,22 @@ export default function App() {
     }
   };
 
-  const [favorites, setFavorites] = useState(() => {
+    // FAVORITES — NAČÍTANIE z localStorage (správna verzia)
+const [favorites, setFavorites] = useState(() => {
   try {
     const stored = JSON.parse(localStorage.getItem("favorites"));
-    return stored ?? { personas: [], tones: [] };
+    return stored ?? { personas: [], tones: [], outputs: [] };
   } catch {
-    return { personas: [], tones: [] };
+    return { personas: [], tones: [], outputs: [] };
   }
 });
 
+// AUTOMATICKÝ ZÁPIS DO localStorage pri zmene
 useEffect(() => {
   localStorage.setItem("favorites", JSON.stringify(favorites));
 }, [favorites]);
 
 
-useEffect(() => {
-  try {
-    const stored = JSON.parse(localStorage.getItem("favorites") || "{}");
-    setFavorites({
-      personas: stored.personas || [],
-      tones: stored.tones || []
-    });
-  } catch {}
-}, []);
-
-useEffect(() => {
-  localStorage.setItem("favorites", JSON.stringify(favorites));
-}, [favorites]);
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans p-4">

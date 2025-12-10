@@ -18,7 +18,7 @@ export default function SuggestionInput({
   const [query, setQuery] = useState("");
   const containerRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -29,7 +29,7 @@ export default function SuggestionInput({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Filter list
+  // filtering suggestions
   const filtered = useMemo(() => {
     if (!query.trim()) return suggestions;
     return suggestions.filter((s) =>
@@ -37,56 +37,60 @@ export default function SuggestionInput({
     );
   }, [suggestions, query]);
 
-  // Input typing
+  const isToneField = id === "tone";
+
+  // handle typing
   const handleInputChange = (val) => {
-    if (!multiSelect) {
-      onChange(val);
-    }
+    if (!multiSelect) onChange(val);
     setQuery(val);
     if (!open) setOpen(true);
   };
 
-  // Clicking an item
+  // toggle item selection
   const handleSelect = (s) => {
     if (multiSelect) {
       let newValue = Array.isArray(value) ? [...value] : [];
-
       if (newValue.includes(s)) {
-        // remove
-        newValue = newValue.filter((item) => item !== s);
+        newValue = newValue.filter((v) => v !== s);
       } else {
-        // add
         newValue.push(s);
       }
       onChange(newValue);
-      setQuery(""); // clear filter
-      setOpen(true); // keep open for more selections
+      setQuery("");
+      setOpen(true);
     } else {
-      // single select
       onChange(s);
       setQuery("");
       setOpen(false);
     }
   };
 
+  // ENTER = iba pre TONY
   const handleKeyDown = (e) => {
-  if (e.key === "Enter" && multiSelect) {
-    e.preventDefault();
-    const newItem = query.trim();
+    if (!isToneField) return; // only tones can add custom items
+    if (!multiSelect) return;
 
-    if (!newItem) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newTone = query.trim();
+      if (!newTone) return;
 
-    let newValue = Array.isArray(value) ? [...value] : [];
+      let newValue = Array.isArray(value) ? [...value] : [];
 
-    if (!newValue.includes(newItem)) {
-      newValue.push(newItem);
+      if (!newValue.includes(newTone)) {
+        newValue.push(newTone);
+      }
+
+      // add to tone selections
+      onChange(newValue);
+
+      // add to favorites of tones
+      onToggleFavorite(newTone);
+
+      setQuery("");
+      setOpen(true);
     }
-
-    onChange(newValue);
-    setQuery("");
-    setOpen(true);
-  }
-};
+  };
 
   const handleClearAll = () => {
     onChange(multiSelect ? [] : "");
@@ -98,7 +102,7 @@ export default function SuggestionInput({
       ref={containerRef}
       className="relative flex flex-col gap-1.5 bg-slate-50 border border-slate-200 rounded-2xl p-3.5"
     >
-      {/* Label */}
+      {/* LABEL */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-baseline gap-2 text-sm font-medium text-slate-900">
           <span>{label}</span>
@@ -106,33 +110,34 @@ export default function SuggestionInput({
         </div>
 
         <div className="flex items-center gap-2">
-        {allowClear && (
-          <button
-            type="button"
-            onClick={handleClearAll}
-            className="text-sm opacity-70 hover:opacity-100"
-            title="Vymazať"
-          >
-            🧹
-          </button>
-        )}
+          {allowClear && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="text-sm opacity-70 hover:opacity-100"
+              title="Vymazať"
+            >
+              🧹
+            </button>
+          )}
 
-        {/* ⭐ hviezda */}
-        <button
-          type="button"
-          onClick={() => onToggleFavorite(value || query)}
-          disabled={!value && !query}
-          className={`text-lg ${
-            favorites.includes(value || query)
-              ? "text-yellow-500"
-              : "text-slate-400 hover:text-yellow-500"
-          }`}
-          title="Pridať do obľúbených"
-        >
-          ⭐
-        </button>
-      </div>
-
+          {/* ⭐ only for persona — tones no star */}
+          {!isToneField && (
+            <button
+              type="button"
+              onClick={() => onToggleFavorite(value || query)}
+              disabled={!value && !query}
+              className={`text-lg ${
+                favorites.includes(value || query)
+                  ? "text-yellow-500"
+                  : "text-slate-400 hover:text-yellow-500"
+              }`}
+              title="Pridať do obľúbených"
+            >
+              ⭐
+            </button>
+          )}
+        </div>
       </div>
 
       {/* MULTISELECT TAGS */}
@@ -155,7 +160,7 @@ export default function SuggestionInput({
         </div>
       )}
 
-      {/* Input */}
+      {/* INPUT */}
       <input
         id={id}
         type="text"
@@ -168,36 +173,56 @@ export default function SuggestionInput({
         onKeyDown={handleKeyDown}
       />
 
-      {/* Dropdown */}
-      {open && filtered.length > 0 && (
+      {/* DROPDOWN */}
+      {open && (filtered.length > 0 || favorites.length > 0) && (
         <div className="absolute left-3 right-3 top-[100%] mt-1 rounded-2xl border border-slate-200 bg-white shadow-xl max-h-64 overflow-y-auto z-20">
-          {favorites.length > 0 && (
-              <div>
-                <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wider text-amber-600">
-                  Obľúbené
-                </div>
-                {favorites
-                  .filter((f) => f.toLowerCase().includes(query.toLowerCase()))
-                  .map((fav) => {
-                    const active =
-                      multiSelect && Array.isArray(value) && value.includes(fav);
 
-                    return (
-                      <button
-                        key={`fav-${fav}`}
-                        type="button"
-                        onClick={() => handleSelect(fav)}
-                        className={`w-full text-left px-4 py-2 text-sm flex justify-between hover:bg-amber-50 ${
-                          active ? "bg-amber-100 text-amber-800" : ""
-                        }`}
-                      >
-                        {fav} ⭐
-                      </button>
-                    );
-                  })}
+          {/* MOJE TÓNY (iba ak id === tone) */}
+          {isToneField && favorites.length > 0 && (
+            <div className="border-b border-slate-100">
+              <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wider text-violet-600">
+                Moje tóny
               </div>
-            )}
+              {favorites
+                .filter((f) =>
+                  f.toLowerCase().includes(query.toLowerCase())
+                )
+                .map((fav) => {
+                  const active =
+                    multiSelect && Array.isArray(value) && value.includes(fav);
 
+                  return (
+                    <div
+                      key={`fav-${fav}`}
+                      className={`w-full px-4 py-2 text-sm flex justify-between items-center hover:bg-violet-50 ${
+                        active ? "bg-violet-100 text-violet-800" : ""
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        className="text-left flex-1"
+                        onClick={() => handleSelect(fav)}
+                      >
+                        {fav}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="text-xs text-red-400 hover:text-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleFavorite(fav);
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
+          {/* SUGGESTIONS */}
           {filtered.map((s) => {
             const active =
               multiSelect && Array.isArray(value) && value.includes(s);
