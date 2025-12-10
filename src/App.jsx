@@ -126,6 +126,34 @@ export default function App() {
     }
   };
 
+  const [favorites, setFavorites] = useState(() => {
+  try {
+    const stored = JSON.parse(localStorage.getItem("favorites"));
+    return stored ?? { personas: [], tones: [] };
+  } catch {
+    return { personas: [], tones: [] };
+  }
+});
+
+useEffect(() => {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}, [favorites]);
+
+
+useEffect(() => {
+  try {
+    const stored = JSON.parse(localStorage.getItem("favorites") || "{}");
+    setFavorites({
+      personas: stored.personas || [],
+      tones: stored.tones || []
+    });
+  } catch {}
+}, []);
+
+useEffect(() => {
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+}, [favorites]);
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans p-4">
       <div className="w-full max-w-[1600px] mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] overflow-visible">
@@ -158,6 +186,8 @@ export default function App() {
               status={status}
               onClear={handleClear}
               onGenerateFromApi={handleGenerateFromApi}
+              favorites={favorites}
+              setFavorites={setFavorites}
             />
             <PreviewPanel
               preview={preview}
