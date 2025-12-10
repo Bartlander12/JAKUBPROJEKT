@@ -76,6 +76,7 @@ export default function PromptForm({
         value={form.persona}
         onChange={handleChange("persona")}
         suggestions={PERSONA_SUGGESTIONS}
+        enableEnterAdd={true}
         favorites={favorites.personas}                // NEW
         onToggleFavorite={(val) => {
           setFavorites((prev) => ({
