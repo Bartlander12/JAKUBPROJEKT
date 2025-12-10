@@ -76,7 +76,7 @@ export default function PromptForm({
         value={form.persona}
         onChange={handleChange("persona")}
         suggestions={PERSONA_SUGGESTIONS}
-        favorites={favorites.personas}                 // NEW
+        favorites={favorites.personas}                // NEW
         onToggleFavorite={(val) => {
           setFavorites((prev) => ({
             ...prev,
@@ -127,14 +127,25 @@ export default function PromptForm({
         }}
       />
 
-     <OutputFormatSelect
-  id="output"
-  label="Output format"
-  hint="(ako má vyzerať odpoveď?)"
-  value={form.output}
-  onChange={handleChange("output")}
-   maxSelected={6}
-/>
+      <OutputFormatSelect
+        id="output"
+        label="Output format"
+        hint="(ako má vyzerať odpoveď?)"
+        value={form.output}
+        onChange={handleChange("output")}
+        maxSelected={6}
+        favorites={favorites.outputs}
+        onToggleFavorite={(val) => {
+          if (!val) return;
+          setFavorites((prev) => ({
+            ...prev,
+            outputs: prev.outputs.includes(val)
+              ? prev.outputs.filter((v) => v !== val)
+              : [...prev.outputs, val],
+          }));
+        }}
+      />
+
 
 
 
