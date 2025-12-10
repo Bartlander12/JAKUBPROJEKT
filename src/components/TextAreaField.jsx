@@ -16,18 +16,21 @@ export default function TextAreaField({
           <span>{label}</span>
           <span className="text-xs font-normal text-slate-500">{hint}</span>
         </div>
+
+        {/* CLEAR BUTTON – replaced broom with X */}
         <button
           type="button"
           onClick={() => onChange("")}
-          className="text-sm opacity-70 hover:opacity-100"
+          className="text-slate-400 hover:text-slate-600 text-lg leading-none"
           title="Vymazať"
         >
-          🧹
+          ✕
         </button>
       </div>
+
       <textarea
         id={id}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 resize-vertical min-h-[80px]"
+        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/40 resize-vertical min-h-[80px]"
         placeholder={hint}
         value={value}
         onChange={(e) => onChange(e.target.value)}
