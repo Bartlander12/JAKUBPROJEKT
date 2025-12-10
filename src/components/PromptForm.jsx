@@ -3,6 +3,7 @@ import React from "react";
 import SuggestionInput from "./SuggestionInput";
 import TextAreaField from "./TextAreaField";
 import Toggle from "./Toggle";
+import OutputFormatSelect from "./OutputFormatSelect";
 
 // jednoduché návrhy
 const PERSONA_SUGGESTIONS = [
@@ -23,28 +24,7 @@ const TONE_SUGGESTIONS = [
   "Uvoľnený",
 ];
 
-const OUTPUT_SUGGESTIONS = [
-  "Stručné zhrnutie",
-  "Detailný text v odsekoch",
-  "Výstup v bodoch",
-  "3 varianty v bodoch",
-  "3 kreatívne varianty (A/B/C)",
-  "How-to postup",
-  "Porovnávacia tabuľka",
-  "FAQ sekcia",
-  "Prehľad / Executive Summary",
-  "Social media post",
-  "Headline + subheadline",
-  "Landing page sekcie",
-  "Produktový popis (UX copy)",
-  "Storytelling / hero text",
-  "Value proposition / benefit bullets",
-  "Emailová štruktúra",
-  "CTA blok",
-  "Šablóna odpovede pre klienta",
-  "Výstup v JSON",
-  "KPI / metrický report v bodoch",
-];
+
 
 export default function PromptForm({
   form,
@@ -125,15 +105,16 @@ export default function PromptForm({
         multiSelect={true}
       />
 
-      <SuggestionInput
-        id="output"
-        label="Output format"
-        hint="(ako má vyzerať odpoveď?)"
-        placeholder="Napr. 3 varianty, odseky, body…"
-        value={form.output}
-        onChange={handleChange("output")}
-        suggestions={OUTPUT_SUGGESTIONS}
-      />
+     <OutputFormatSelect
+  id="output"
+  label="Output format"
+  hint="(ako má vyzerať odpoveď?)"
+  value={form.output}
+  onChange={handleChange("output")}
+   maxSelected={6}
+/>
+
+
 
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col gap-3">
         <Toggle

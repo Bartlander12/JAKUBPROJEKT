@@ -53,7 +53,7 @@ export default function App() {
       task: "",
       goal: "",
       tone: [],
-      output: "",
+      output: [],
     });
     setCot(false);
     setStatus("");
