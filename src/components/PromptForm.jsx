@@ -127,13 +127,6 @@ export default function PromptForm({
           Pre bežné emaily a statusy CoT nepotrebuješ. Hodí sa pri zložitejších
           úlohách (argumentácia, analýza, postupy).
         </p>
-        <div className="border-t border-dashed border-slate-200 pt-2 mt-1">
-          <Toggle
-            label="Výstup ako JSON"
-            checked={jsonMode}
-            onChange={setJsonMode}
-          />
-        </div>
       </div>
 
       {status && (

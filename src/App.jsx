@@ -16,7 +16,7 @@ export default function App() {
     output: "",
   });
   const [cot, setCot] = useState(false);
-  const [jsonMode, setJsonMode] = useState(true);
+  const [jsonMode, setJsonMode] = useState(false);
   const [status, setStatus] = useState("");
   const [savedPrompts, setSavedPrompts] = useState([]);
 
@@ -128,7 +128,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans p-4">
-      <div className="w-full max-w-[1600px] mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] overflow-hidden">
+      <div className="w-full max-w-[1600px] mx-auto bg-white rounded-3xl shadow-2xl border border-slate-200 grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] overflow-visible">
         <Sidebar />
         <main className="bg-slate-50 p-4 md:p-5 grid grid-rows-[auto_minmax(0,1fr)] gap-3">
           <header className="flex flex-col gap-1">
