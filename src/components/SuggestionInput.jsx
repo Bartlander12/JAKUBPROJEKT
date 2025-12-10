@@ -12,11 +12,18 @@ export default function SuggestionInput({
   allowClear = true,
   multiSelect = false,
   favorites = [],
+  enableEnterAdd = false,
   onToggleFavorite = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const containerRef = useRef(null);
+
+  // detect tone field
+  const isTone = id === "tone";
+
+  // enter-add allowed for persona or tones
+  const canEnterAdd = enableEnterAdd || isTone;
 
   // close dropdown on outside click
   useEffect(() => {
@@ -37,13 +44,17 @@ export default function SuggestionInput({
     );
   }, [suggestions, query]);
 
-  const isToneField = id === "tone";
-
   // handle typing
   const handleInputChange = (val) => {
     if (!multiSelect) onChange(val);
     setQuery(val);
     if (!open) setOpen(true);
+  };
+
+  const handleClearAll = () => {
+    setQuery("");
+    if (multiSelect) onChange([]);
+    else onChange("");
   };
 
   // toggle item selection
@@ -65,35 +76,39 @@ export default function SuggestionInput({
     }
   };
 
-  // ENTER = iba pre TONY
+  // ENTER logic (persona + tone)
   const handleKeyDown = (e) => {
-    if (!isToneField) return; // only tones can add custom items
-    if (!multiSelect) return;
+    if (!canEnterAdd) return;
+    if (e.key !== "Enter") return;
 
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const newTone = query.trim();
-      if (!newTone) return;
+    e.preventDefault();
+    const newItem = query.trim();
+    if (!newItem) return;
 
-      let newValue = Array.isArray(value) ? [...value] : [];
-
-      if (!newValue.includes(newTone)) {
-        newValue.push(newTone);
-      }
-
-      // add to tone selections
-      onChange(newValue);
-
-      // add to favorites of tones
-      onToggleFavorite(newTone);
-
+    // already exists → toggle
+    if (suggestions.includes(newItem) || favorites.includes(newItem) || value === newItem) {
+      onChange(newItem);
+      onToggleFavorite(newItem);
       setQuery("");
-      setOpen(true);
+      return;
     }
-  };
 
-  const handleClearAll = () => {
-    onChange(multiSelect ? [] : "");
+    // persona = single select
+    if (!multiSelect) {
+      onChange(newItem);
+      onToggleFavorite(newItem);
+      setQuery("");
+      return;
+    }
+
+    // tones = multi select
+    let newValue = Array.isArray(value) ? [...value] : [];
+    if (!newValue.includes(newItem)) {
+      newValue.push(newItem);
+    }
+
+    onChange(newValue);
+    onToggleFavorite(newItem);
     setQuery("");
   };
 
@@ -121,8 +136,8 @@ export default function SuggestionInput({
             </button>
           )}
 
-          {/* ⭐ only for persona — tones no star */}
-          {!isToneField && (
+          {/* favorite star (persona, not tone) */}
+          {id !== "tone" && (
             <button
               type="button"
               onClick={() => onToggleFavorite(value || query)}
@@ -134,7 +149,6 @@ export default function SuggestionInput({
               }`}
               title="Pridať do obľúbených"
             >
-              ⭐
             </button>
           )}
         </div>
@@ -177,12 +191,13 @@ export default function SuggestionInput({
       {open && (filtered.length > 0 || favorites.length > 0) && (
         <div className="absolute left-3 right-3 top-[100%] mt-1 rounded-2xl border border-slate-200 bg-white shadow-xl max-h-64 overflow-y-auto z-20">
 
-          {/* MOJE TÓNY (iba ak id === tone) */}
-          {isToneField && favorites.length > 0 && (
+          {/* tone favorites section */}
+          {isTone && favorites.length > 0 && (
             <div className="border-b border-slate-100">
               <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wider text-violet-600">
                 Moje tóny
               </div>
+
               {favorites
                 .filter((f) =>
                   f.toLowerCase().includes(query.toLowerCase())
@@ -222,7 +237,46 @@ export default function SuggestionInput({
             </div>
           )}
 
-          {/* SUGGESTIONS */}
+          {/* PERSONA favorites */}
+          {!isTone && favorites.length > 0 && (
+            <div className="border-b border-slate-100">
+              <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wider text-amber-600">
+                Moje persony
+              </div>
+
+              {favorites
+                .filter((f) =>
+                  f.toLowerCase().includes(query.toLowerCase())
+                )
+                .map((fav) => (
+                  <div
+                    key={`fav-${fav}`}
+                    className="w-full px-4 py-2 text-sm flex justify-between items-center hover:bg-amber-50"
+                  >
+                    <button
+                      type="button"
+                      className="text-left flex-1"
+                      onClick={() => handleSelect(fav)}
+                    >
+                      {fav}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="text-xs text-red-400 hover:text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(fav);
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* suggestions */}
           {filtered.map((s) => {
             const active =
               multiSelect && Array.isArray(value) && value.includes(s);
