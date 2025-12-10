@@ -10,7 +10,9 @@ export default function SuggestionInput({
   suggestions,
   id,
   allowClear = true,
-  multiSelect = false,  // 🔥 nový parameter
+  multiSelect = false,
+  favorites = [],
+  onToggleFavorite = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -103,6 +105,7 @@ export default function SuggestionInput({
           {hint && <span className="text-xs text-slate-500">{hint}</span>}
         </div>
 
+        <div className="flex items-center gap-2">
         {allowClear && (
           <button
             type="button"
@@ -113,6 +116,23 @@ export default function SuggestionInput({
             🧹
           </button>
         )}
+
+        {/* ⭐ hviezda */}
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(value || query)}
+          disabled={!value && !query}
+          className={`text-lg ${
+            favorites.includes(value || query)
+              ? "text-yellow-500"
+              : "text-slate-400 hover:text-yellow-500"
+          }`}
+          title="Pridať do obľúbených"
+        >
+          ⭐
+        </button>
+      </div>
+
       </div>
 
       {/* MULTISELECT TAGS */}
@@ -151,6 +171,33 @@ export default function SuggestionInput({
       {/* Dropdown */}
       {open && filtered.length > 0 && (
         <div className="absolute left-3 right-3 top-[100%] mt-1 rounded-2xl border border-slate-200 bg-white shadow-xl max-h-64 overflow-y-auto z-20">
+          {favorites.length > 0 && (
+              <div>
+                <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wider text-amber-600">
+                  Obľúbené
+                </div>
+                {favorites
+                  .filter((f) => f.toLowerCase().includes(query.toLowerCase()))
+                  .map((fav) => {
+                    const active =
+                      multiSelect && Array.isArray(value) && value.includes(fav);
+
+                    return (
+                      <button
+                        key={`fav-${fav}`}
+                        type="button"
+                        onClick={() => handleSelect(fav)}
+                        className={`w-full text-left px-4 py-2 text-sm flex justify-between hover:bg-amber-50 ${
+                          active ? "bg-amber-100 text-amber-800" : ""
+                        }`}
+                      >
+                        {fav} ⭐
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+
           {filtered.map((s) => {
             const active =
               multiSelect && Array.isArray(value) && value.includes(s);

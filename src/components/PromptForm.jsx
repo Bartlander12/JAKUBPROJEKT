@@ -36,6 +36,8 @@ export default function PromptForm({
   status,
   onClear,
   onGenerateFromApi,
+  favorites,
+  setFavorites,
 }) {
   const handleChange = (key) => (val) => {
     setForm((prev) => ({ ...prev, [key]: val }));
@@ -74,12 +76,22 @@ export default function PromptForm({
         value={form.persona}
         onChange={handleChange("persona")}
         suggestions={PERSONA_SUGGESTIONS}
+        favorites={favorites.personas}                 // NEW
+        onToggleFavorite={(val) => {
+          setFavorites((prev) => ({
+            ...prev,
+            personas: prev.personas.includes(val)
+              ? prev.personas.filter((v) => v !== val)
+              : [...prev.personas, val]
+          }));
+        }}
       />
 
       <TextAreaField
         id="task"
         label="Task"
-        hint="Napr. Napíš email klientovi s pripomenutím nezaplatenej faktúry."
+        hint="(Čo má AI urobiť?)"
+        placeholder="Napr. Napíš email klientovi s pripomenutím nezaplatenej faktúry."
         value={form.task}
         onChange={handleChange("task")}
         required
@@ -88,7 +100,8 @@ export default function PromptForm({
       <TextAreaField
         id="goal"
         label="Goal / Context"
-        hint="Napr. Chcem, aby klient zaplatil do piatku a zároveň ostal dobrý obchodný vzťah."
+        hint="(Prečo má AI úlohu vykonať?)"
+        placeholder="Napr. Chcem, aby klient zaplatil do piatku a zároveň ostal dobrý obchodný vzťah."
         value={form.goal}
         onChange={handleChange("goal")}
         required
@@ -103,6 +116,15 @@ export default function PromptForm({
         onChange={handleChange("tone")}
         suggestions={TONE_SUGGESTIONS}
         multiSelect={true}
+        favorites={favorites.tones}                    // NEW
+        onToggleFavorite={(val) => {
+          setFavorites((prev) => ({
+            ...prev,
+            tones: prev.tones.includes(val)
+              ? prev.tones.filter((v) => v !== val)
+              : [...prev.tones, val]
+          }));
+        }}
       />
 
      <OutputFormatSelect
