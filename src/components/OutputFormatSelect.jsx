@@ -1,3 +1,4 @@
+// src/components/OutputFormatSelect.jsx
 import React, { useMemo, useRef, useState, useEffect } from "react";
 
 const OUTPUT_CATEGORIES = [
@@ -63,7 +64,6 @@ const OUTPUT_CATEGORIES = [
   },
 ];
 
-// Map for fast lookup
 function buildOptionMap(customOptions = []) {
   const base = OUTPUT_CATEGORIES.flatMap((cat) =>
     cat.options.map((opt) => ({
@@ -99,6 +99,8 @@ export default function OutputFormatSelect({
   const [warning, setWarning] = useState("");
   const containerRef = useRef(null);
 
+  const selectedValues = Array.isArray(value) ? value : [];
+
   const [customOutputs, setCustomOutputs] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("custom_outputs") || "[]");
@@ -116,8 +118,6 @@ export default function OutputFormatSelect({
     [customOutputs]
   );
 
-  const selectedValues = Array.isArray(value) ? value : [];
-
   const selectedCategoryId = useMemo(() => {
     const ids = selectedValues
       .map((v) => OPTION_MAP[v]?.categoryId)
@@ -126,7 +126,7 @@ export default function OutputFormatSelect({
     return ids.length ? ids[0] : null;
   }, [selectedValues, OPTION_MAP]);
 
-  // Close dropdown when clicking outside
+  // close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (
@@ -140,21 +140,18 @@ export default function OutputFormatSelect({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Category filter logic
   const filteredCategories = useMemo(() => {
     const q = query.toLowerCase().trim();
 
     return OUTPUT_CATEGORIES.filter((cat) => {
-      // custom formats accept all categories
       if (selectedCategoryId === "custom") return true;
-
       if (!selectedCategoryId) return true;
       if (cat.id === selectedCategoryId) return true;
 
-      const selCat = OUTPUT_CATEGORIES.find((c) => c.id === selectedCategoryId);
-      if (!selCat) return true;
+      const sel = OUTPUT_CATEGORIES.find((c) => c.id === selectedCategoryId);
+      if (!sel) return true;
 
-      return selCat.compatibility.includes(cat.id);
+      return sel.compatibility.includes(cat.id);
     })
       .map((cat) => ({
         ...cat,
@@ -170,14 +167,16 @@ export default function OutputFormatSelect({
     .filter(Boolean)
     .filter((o) => o.value.toLowerCase().includes(query.toLowerCase()));
 
-  // Toggle format selection
   const handleToggleOption = (opt) => {
     setWarning("");
 
     const isSelected = selectedValues.includes(opt);
 
-    if (selectedValues.length >= 3 && !isSelected) 
-       { setWarning( "Príliš veľa výstupov môže zhoršiť kvalitu odpovede. Odporúčame max 2–3." ); }
+    if (selectedValues.length >= 3 && !isSelected) {
+      setWarning(
+        "Príliš veľa výstupov môže zhoršiť kvalitu odpovede. Odporúčame max 2–3."
+      );
+    }
 
     if (!isSelected && selectedValues.length >= maxSelected) {
       setWarning(`Môžeš vybrať maximálne ${maxSelected} možností.`);
@@ -192,7 +191,6 @@ export default function OutputFormatSelect({
     setOpen(true);
   };
 
-  // ENTER → add custom format
   const handleKeyDown = (e) => {
     if (e.key === "Escape") return setOpen(false);
     if (e.key !== "Enter") return;
@@ -214,14 +212,11 @@ export default function OutputFormatSelect({
     setOpen(true);
   };
 
-  // Clear selected outputs
   const handleClearAll = () => {
     setQuery("");
     onChange([]);
     setWarning("");
   };
-
-  const showClear = query.length > 0;
 
   return (
     <div
@@ -232,12 +227,9 @@ export default function OutputFormatSelect({
       <div className="flex justify-between items-start">
         <div>
           <div className="text-sm font-medium">{label}</div>
-          {hint && (
-            <div className="text-[11px] text-slate-500">{hint}</div>
-          )}
+          {hint && <div className="text-[11px] text-slate-500">{hint}</div>}
         </div>
 
-        {/* Clean X button */}
         <button
           onClick={handleClearAll}
           className="text-slate-400 hover:text-slate-600 text-lg"
@@ -266,7 +258,7 @@ export default function OutputFormatSelect({
         </div>
       )}
 
-      {/* INPUT + X CLEAR */}
+      {/* INPUT */}
       <div className="relative">
         <input
           id={id}
@@ -280,7 +272,7 @@ export default function OutputFormatSelect({
           autoComplete="off"
         />
 
-        {showClear && (
+        {query.length > 0 && (
           <button
             onClick={() => setQuery("")}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
@@ -292,30 +284,44 @@ export default function OutputFormatSelect({
 
       {/* DROPDOWN */}
       {open && (
-        <div className="absolute left-3 right-3 mt-1 top-full bg-white border border-slate-200 rounded-2xl shadow-xl max-h-72 overflow-y-auto text-sm z-20">
+        <div className="absolute left-3 right-3 top-full mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-72 overflow-y-auto text-sm z-20">
 
           {/* FAVORITES */}
-          {favoriteOptions.length > 0 && (
+            {favoriteOptions.length > 0 && (
             <div className="border-b border-slate-100">
-              <div className="px-4 pt-2 pb-1 text-[11px] uppercase text-amber-600">
+                <div className="px-4 pt-2 pb-1 text-[11px] uppercase text-amber-600">
                 Obľúbené
-              </div>
+                </div>
 
-              {favoriteOptions.map((m) => {
+                {favoriteOptions.map((m) => {
                 const active = selectedValues.includes(m.value);
+
                 return (
-                  <button
+                    <div
                     key={m.value}
+                    className={`w-full px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-amber-50 ${
+                        active ? "bg-orange-50 text-orange-700" : ""
+                    }`}
                     onClick={() => handleToggleOption(m.value)}
-                    className="w-full px-4 py-2 flex justify-between hover:bg-amber-50"
-                  >
+                    >
                     <span>{m.value}</span>
-                    {active && <span>✔</span>}
-                  </button>
+
+                    {/* DELETE BUTTON */}
+                    <button
+                        className="text-xs text-red-400 hover:text-red-600"
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(m.value);
+                        }}
+                    >
+                        🗑️
+                    </button>
+                    </div>
                 );
-              })}
+                })}
             </div>
-          )}
+            )}
+
 
           {/* CUSTOM */}
           {customOutputs.length > 0 && (
@@ -326,15 +332,27 @@ export default function OutputFormatSelect({
 
               {customOutputs.map((opt) => {
                 const active = selectedValues.includes(opt);
+
                 return (
-                  <button
+                  <div
                     key={opt}
+                    className={`w-full px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-violet-50 ${
+                      active ? "bg-orange-50 text-orange-700" : ""
+                    }`}
                     onClick={() => handleToggleOption(opt)}
-                    className="w-full px-4 py-2 flex justify-between hover:bg-violet-50"
                   >
                     <span>{opt}</span>
-                    {active && <span>✔</span>}
-                  </button>
+
+                    <button
+                      className="text-xs text-red-400 hover:text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(opt);
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -351,14 +369,15 @@ export default function OutputFormatSelect({
                 const active = selectedValues.includes(opt);
 
                 return (
-                  <button
+                  <div
                     key={opt}
+                    className={`w-full px-4 py-2 cursor-pointer hover:bg-slate-50 ${
+                      active ? "bg-orange-50 text-orange-700" : ""
+                    }`}
                     onClick={() => handleToggleOption(opt)}
-                    className={`w-full px-4 py-2 flex justify-between hover:bg-slate-50`}
                   >
-                    <span>{opt}</span>
-                    {active && <span>✔</span>}
-                  </button>
+                    {opt}
+                  </div>
                 );
               })}
             </div>
