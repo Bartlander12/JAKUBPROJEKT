@@ -1,9 +1,9 @@
 // src/components/PromptForm.jsx
 import React from "react";
-import SuggestionInput from "./SuggestionInput";
+import SuggestionInput from "./SuggestionInput/SuggestionInput";
 import TextAreaField from "./TextAreaField";
 import Toggle from "./Toggle";
-import OutputFormatSelect from "./OutputFormatSelect";
+import OutputFormatSelect from "./output-format/OutputFormatSelect"
 
 // jednoduché návrhy
 const PERSONA_SUGGESTIONS = [

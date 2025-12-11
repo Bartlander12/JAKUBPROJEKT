@@ -286,41 +286,6 @@ export default function OutputFormatSelect({
       {open && (
         <div className="absolute left-3 right-3 top-full mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-72 overflow-y-auto text-sm z-20">
 
-          {/* FAVORITES */}
-            {favoriteOptions.length > 0 && (
-            <div className="border-b border-slate-100">
-                <div className="px-4 pt-2 pb-1 text-[11px] uppercase text-amber-600">
-                Obľúbené
-                </div>
-
-                {favoriteOptions.map((m) => {
-                const active = selectedValues.includes(m.value);
-
-                return (
-                    <div
-                    key={m.value}
-                    className={`w-full px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-amber-50 ${
-                        active ? "bg-orange-50 text-orange-700" : ""
-                    }`}
-                    onClick={() => handleToggleOption(m.value)}
-                    >
-                    <span>{m.value}</span>
-
-                    {/* DELETE BUTTON */}
-                    <button
-                        className="text-xs text-red-400 hover:text-red-600"
-                        onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleFavorite(m.value);
-                        }}
-                    >
-                        🗑️
-                    </button>
-                    </div>
-                );
-                })}
-            </div>
-            )}
 
 
           {/* CUSTOM */}
