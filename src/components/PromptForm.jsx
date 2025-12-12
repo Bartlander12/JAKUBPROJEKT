@@ -3,10 +3,9 @@ import React from "react";
 import SuggestionInput from "./SuggestionInput/SuggestionInput";
 import TextAreaField from "./TextAreaField";
 import Toggle from "./Toggle";
-import OutputFormatSelect from "./output-format/OutputFormatSelect"
-import AdvancedSection from "./advanced/AdvancedSection"
+import OutputFormatSelect from "./output-format/OutputFormatSelect";
+import AdvancedSection from "./advanced/AdvancedSection"; // 🔥 dôležitý import
 
-// jednoduché návrhy
 const PERSONA_SUGGESTIONS = [
   "Senior copywriter",
   "Právnik špecializovaný na obchodné zmluvy",
@@ -25,13 +24,10 @@ const TONE_SUGGESTIONS = [
   "Uvoľnený",
 ];
 
-
-
 export default function PromptForm({
   form,
   setForm,
-  cot,
-  setCot,
+  
   jsonMode,
   setJsonMode,
   status,
@@ -78,13 +74,13 @@ export default function PromptForm({
         onChange={handleChange("persona")}
         suggestions={PERSONA_SUGGESTIONS}
         enableEnterAdd={true}
-        favorites={favorites.personas}                // NEW
+        favorites={favorites.personas}
         onToggleFavorite={(val) => {
           setFavorites((prev) => ({
             ...prev,
             personas: prev.personas.includes(val)
               ? prev.personas.filter((v) => v !== val)
-              : [...prev.personas, val]
+              : [...prev.personas, val],
           }));
         }}
       />
@@ -118,13 +114,13 @@ export default function PromptForm({
         onChange={handleChange("tone")}
         suggestions={TONE_SUGGESTIONS}
         multiSelect={true}
-        favorites={favorites.tones}                    // NEW
+        favorites={favorites.tones}
         onToggleFavorite={(val) => {
           setFavorites((prev) => ({
             ...prev,
             tones: prev.tones.includes(val)
               ? prev.tones.filter((v) => v !== val)
-              : [...prev.tones, val]
+              : [...prev.tones, val],
           }));
         }}
       />
@@ -148,48 +144,27 @@ export default function PromptForm({
         }}
       />
 
+      {/* ADVANCED SECTION */}
       <AdvancedSection
-      requiredPhrases={form.requiredPhrases}
-      forbiddenPhrases={form.forbiddenPhrases}
-      additionalConstraints={form.additionalConstraints}
-      examples={form.examples}
-      cotEnabled={form.cotEnabled}
-
-      onRequiredPphrasesChange={(v) => update("requiredPhrases", v)}
-      onForbiddenPhrasesChange={(v) => update("forbiddenPhrases", v)}
-      onAdditionalConstraintsChange={(v) => update("additionalConstraints", v)}
-      onExamplesChange={(v) => update("examples", v)}
-      onCotChange={(v) => update("cotEnabled", v)}
+        requiredPhrases={form.requiredPhrases || []}
+        forbiddenPhrases={form.forbiddenPhrases || []}
+        additionalConstraints={form.additionalConstraints || ""}
+        examples={form.examples || ""}
+        cotEnabled={form.cotEnabled ?? false}
+        onRequiredPhrasesChange={handleChange("requiredPhrases")}
+        onForbiddenPhrasesChange={handleChange("forbiddenPhrases")}
+        onAdditionalConstraintsChange={handleChange("additionalConstraints")}
+        onExamplesChange={handleChange("examples")}
+        onCotChange={handleChange("cotEnabled")}
       />
 
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col gap-3">
-        <Toggle
-          label="Zapnúť CoT (Chain-of-Thought)"
-          description="– krok po kroku uvažovanie v odpovedi"
-          checked={cot}
-          onChange={setCot}
-        />
-        <p className="text-[11px] text-slate-500">
-          Pre bežné emaily a statusy CoT nepotrebuješ. Hodí sa pri zložitejších
-          úlohách (argumentácia, analýza, postupy).
-        </p>
-      </div>
+      {/* starý CoT blok môžeš teraz pokojne odstrániť, ak chceš CoT len v AdvancedSection */}
 
       {status && (
         <div className="text-[11px] text-slate-500 min-h-[14px]">
           {status}
         </div>
       )}
-
-      {/* API button je stále voliteľný:
-      <button
-        type="button"
-        onClick={onGenerateFromApi}
-        className="self-start mt-1 inline-flex items-center gap-2 rounded-full bg-blue-600 text-white text-sm font-medium px-4 py-2 shadow-md hover:shadow-lg"
-      >
-        ⚡ Generate Prompt (API)
-      </button>
-      */}
     </section>
   );
 }

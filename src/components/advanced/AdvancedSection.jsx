@@ -1,3 +1,4 @@
+// src/components/advanced/AdvancedSection.jsx
 import React, { useState } from "react";
 import SuggestionInput from "../SuggestionInput/SuggestionInput";
 import TextAreaField from "../TextAreaField";
@@ -19,30 +20,35 @@ export default function AdvancedSection({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
-      {/* HEADER */}
+    <>
+      {/* DIVIDER + TOGGLE */}
       <button
-        className="w-full flex justify-between items-center text-left"
-        onClick={() => setOpen(!open)}
-      >
-        <div className="text-sm font-medium text-slate-900">
-          Advanced Options
-        </div>
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="w-full flex items-center gap-3 text-xs text-slate-500 hover:text-slate-700 select-none"
+            >
+            <div className="flex-1 border-t border-slate-200" />
 
-        <div
-          className={`transition-transform duration-200 text-slate-500 ${
-            open ? "rotate-90" : "-rotate-90"
-          }`}
-        >
-          ‹‹
-        </div>
-      </button>
+            <span className="uppercase tracking-wide">
+                Advanced options
+            </span>
 
-      {/* COLLAPSE AREA */}
+            <span
+                className={`transition-transform duration-200 ${
+                open ? "rotate-180" : ""
+                }`}
+            >
+                ⌄
+            </span>
+
+            <div className="flex-1 border-t border-slate-200" />
+            </button>
+
+
+      {/* ADVANCED CONTENT */}
       {open && (
         <div className="mt-4 flex flex-col gap-4">
 
-          {/* REQUIRED PHRASES */}
           <SuggestionInput
             id="required_phrases"
             label="Required phrases"
@@ -51,12 +57,11 @@ export default function AdvancedSection({
             value={requiredPhrases}
             onChange={onRequiredPhrasesChange}
             suggestions={[]}
-            multiSelect={true}
-            enableEnterAdd={true}
+            multiSelect
+            enableEnterAdd
             favorites={[]}
           />
 
-          {/* FORBIDDEN PHRASES */}
           <SuggestionInput
             id="forbidden_phrases"
             label="Forbidden phrases"
@@ -65,26 +70,20 @@ export default function AdvancedSection({
             value={forbiddenPhrases}
             onChange={onForbiddenPhrasesChange}
             suggestions={[]}
-            multiSelect={true}
-            enableEnterAdd={true}
+            multiSelect
+            enableEnterAdd
             favorites={[]}
           />
 
-          {/* ADDITIONAL CONSTRAINTS */}
-          <SuggestionInput
-            id="additional_constraints"
+          <TextAreaField
+            id="additionalConstraints"
             label="Additional constraints"
-            hint="Ďalšie pravidlá, obmedzenia, špecifikácie"
-            placeholder="Add constraint…"
+            hint="(voľné pravidlá, obmedzenia, požiadavky)"
+            placeholder="Napr. Nepoužívaj emoji, odpovedaj stručne…"
             value={additionalConstraints}
             onChange={onAdditionalConstraintsChange}
-            suggestions={[]}
-            multiSelect={true}
-            enableEnterAdd={true}
-            favorites={[]}
           />
 
-          {/* EXAMPLES */}
           <TextAreaField
             id="examples"
             label="Examples"
@@ -94,16 +93,14 @@ export default function AdvancedSection({
             onChange={onExamplesChange}
           />
 
-          {/* CHAIN OF THOUGHT */}
           <Toggle
-            id="cot_toggle"
             label="Chain of Thought"
-            hint="(Model bude premýšľať explicitne)"
-            value={cotEnabled}
+            description="Model bude uvažovať krok po kroku"
+            checked={cotEnabled}
             onChange={onCotChange}
           />
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -168,8 +168,8 @@ useEffect(() => {
             <PromptForm
               form={form}
               setForm={setForm}
-              cot={cot}
-              setCot={setCot}
+              
+              
               jsonMode={jsonMode}
               setJsonMode={setJsonMode}
               status={status}
@@ -180,7 +180,7 @@ useEffect(() => {
             />
             <PreviewPanel
               preview={preview}
-              cot={cot}
+              
               jsonMode={jsonMode}
               setJsonMode={setJsonMode}
               onCopy={handleCopy}
