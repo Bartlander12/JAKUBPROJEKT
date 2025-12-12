@@ -1,9 +1,8 @@
 // src/components/SuggestionInput/SuggestionInput.jsx
 import React, { useMemo, useState, useRef, useEffect } from "react";
-
-import InputField from "./InputField";
-import Tags from "./Tags";
-import Dropdown from "./Dropdown";
+import DropdownContainer from "../common/dropdown/DropdownContainer";
+import DropdownSection from "../common/dropdown/DropdownSection";
+import DropdownItem from "../common/dropdown/DropdownItem";
 
 export default function SuggestionInput({
   label,
@@ -20,27 +19,16 @@ export default function SuggestionInput({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef(null);
 
   const isTone = id === "tone";
   const canEnterAdd = enableEnterAdd || isTone;
 
-  // keep input synced with persona
+  // keep query synced for persona
   useEffect(() => {
     if (!multiSelect) setQuery(value || "");
   }, [value, multiSelect]);
-
-  // close dropdown when clicking outside
-  useEffect(() => {
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   // filter suggestions
   const filtered = useMemo(() => {
@@ -49,33 +37,47 @@ export default function SuggestionInput({
     return suggestions.filter((s) => s.toLowerCase().includes(q));
   }, [query, suggestions]);
 
-  // input change
+  // combined list for keyboard navigation
+  const listItems = useMemo(() => {
+    let arr = [];
+    if (favorites.length > 0) {
+      favorites
+        .filter((f) => f.toLowerCase().includes(query.toLowerCase()))
+        .forEach((fav) =>
+          arr.push({
+            type: "favorite",
+            value: fav,
+          })
+        );
+    }
+    filtered.forEach((s) =>
+      arr.push({
+        type: "suggestion",
+        value: s,
+      })
+    );
+    return arr;
+  }, [favorites, filtered, query]);
+
+  const valueArray = Array.isArray(value) ? value : [];
+
   const handleInputChange = (val) => {
     setQuery(val);
     if (!multiSelect) onChange(val);
     if (!open) setOpen(true);
+    setActiveIndex(-1);
   };
 
-  // clear all
-  const handleClearAll = () => {
-    setQuery("");
-    multiSelect ? onChange([]) : onChange("");
-  };
-
-  // clear only input
-  const handleInputClear = () => {
-    setQuery("");
-    if (!multiSelect) onChange("");
-  };
-
-  // selecting item
+  // FIXED handleSelect with correct multi-select behavior
   const handleSelect = (s) => {
     if (multiSelect) {
-      let arr = Array.isArray(value) ? [...value] : [];
+      let arr = [...valueArray];
       arr = arr.includes(s) ? arr.filter((v) => v !== s) : [...arr, s];
+
       onChange(arr);
       setQuery("");
-      setOpen(true);
+      setActiveIndex(-1); // 🔥 important fix
+      // do NOT close dropdown on multi-select
     } else {
       onChange(s);
       setQuery(s);
@@ -83,35 +85,20 @@ export default function SuggestionInput({
     }
   };
 
-  // ENTER behavior
-  const handleKeyDown = (e) => {
-    if (!canEnterAdd) return;
-    if (e.key === "Escape") return setOpen(false);
-    if (e.key !== "Enter") return;
-
-    e.preventDefault();
-
+  // FIXED handleEnterAdd with correct behavior for persona + tone
+  const handleEnterAdd = () => {
     const newItem = query.trim();
     if (!newItem) return;
 
-    const exists =
-      suggestions.includes(newItem) ||
-      favorites.includes(newItem);
+    const exists = suggestions.includes(newItem) || favorites.includes(newItem);
 
     if (exists) {
-      if (!multiSelect) {
-        onChange(newItem);
-        setQuery(newItem);
-      } else {
-        let arr = Array.isArray(value) ? [...value] : [];
-        if (!arr.includes(newItem)) arr.push(newItem);
-        onChange(arr);
-        setQuery("");
-      }
+      handleSelect(newItem);
       onToggleFavorite(newItem);
       return;
     }
 
+    // SINGLE SELECT (persona)
     if (!multiSelect) {
       onChange(newItem);
       setQuery(newItem);
@@ -119,14 +106,46 @@ export default function SuggestionInput({
       return;
     }
 
-    let arr = Array.isArray(value) ? [...value] : [];
+    // MULTI SELECT (tone)
+    let arr = [...valueArray];
     if (!arr.includes(newItem)) arr.push(newItem);
+
     onChange(arr);
     onToggleFavorite(newItem);
+
     setQuery("");
+    setActiveIndex(-1); // 🔥 reset again
   };
 
-  const valueArray = Array.isArray(value) ? value : [];
+  const handleKeyDown = (e) => {
+    if (!canEnterAdd) return;
+
+    if (e.key === "Escape") {
+      setOpen(false);
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (activeIndex >= 0) {
+        const item = listItems[activeIndex];
+        if (item) {
+          handleSelect(item.value);
+          setActiveIndex(-1); // 🔥 reset index after Enter
+          return;
+        }
+      }
+
+      handleEnterAdd();
+      return;
+    }
+  };
+
+  const onSelectIndex = (i) => {
+    const item = listItems[i];
+    if (item) handleSelect(item.value);
+  };
 
   const showInputClear =
     (multiSelect && query.length > 0) ||
@@ -147,7 +166,10 @@ export default function SuggestionInput({
         {isTone && (
           <button
             type="button"
-            onClick={handleClearAll}
+            onClick={() => {
+              setQuery("");
+              onChange([]);
+            }}
             className="text-slate-400 hover:text-slate-600 text-lg"
           >
             ✕
@@ -157,34 +179,99 @@ export default function SuggestionInput({
 
       {/* TAGS */}
       {multiSelect && valueArray.length > 0 && (
-        <Tags value={valueArray} onSelect={handleSelect} />
+        <div className="flex flex-wrap gap-1 mb-1">
+          {valueArray.map((tag) => (
+            <span
+              key={tag}
+              className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center gap-1"
+            >
+              {tag}
+              <button
+                onClick={() => handleSelect(tag)}
+                className="text-[11px] hover:text-blue-900"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
       )}
 
       {/* INPUT */}
-      <InputField
-        id={id}
-        placeholder={placeholder}
-        query={query}
-        onChange={handleInputChange}
-        onClear={handleInputClear}
-        onKeyDown={handleKeyDown}
-        showClear={showInputClear}
-        setOpen={setOpen}
-      />
+      <div className="relative">
+        <input
+          id={id}
+          type="text"
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm outline-none focus:ring-2 focus:ring-blue-500/40"
+          placeholder={placeholder}
+          value={query}
+          autoComplete="off"
+          onChange={(e) => handleInputChange(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onKeyDown={handleKeyDown}
+        />
+
+        {showInputClear && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              if (!multiSelect) onChange("");
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
       {/* DROPDOWN */}
-      {open && (
-        <Dropdown
-          filtered={filtered}
-          favorites={favorites}
-          query={query}
-          isTone={isTone}
-          value={value}
-          valueArray={valueArray}
-          onSelect={handleSelect}
-          onToggleFavorite={onToggleFavorite}
-        />
+      <DropdownContainer
+        open={open}
+        onClose={() => setOpen(false)}
+        containerRef={containerRef}
+        activeIndex={activeIndex}
+        setActiveIndex={setActiveIndex}
+        itemCount={listItems.length}
+        onSelectIndex={onSelectIndex}
+      >
+        {favorites.length > 0 && (
+        <DropdownSection title={isTone ? "Moje tóny" : "Moje persony"}>
+          {favorites
+            .filter((f) =>
+              f.toLowerCase().includes(query.toLowerCase())
+            )
+            .map((fav, i) => (
+              <DropdownItem
+                key={fav}
+                label={fav}
+                active={activeIndex === i}
+                selected={valueArray.includes(fav)}   // 🔥 MUST HAVE
+                onClick={() => handleSelect(fav)}
+                onDelete={() => onToggleFavorite(fav)}
+              />
+            ))}
+        </DropdownSection>
       )}
+
+
+        {/* Suggestions */}
+        <DropdownSection>
+          {filtered.map((s, i) => {
+            const globalIndex = favorites.length + i;
+
+            return (
+              <DropdownItem
+                key={s}
+                label={s}
+                active={activeIndex === globalIndex}
+                selected={valueArray.includes(s)}       // 🔥 MUST HAVE
+                onClick={() => handleSelect(s)}
+              />
+            );
+          })}
+        </DropdownSection>
+      </DropdownContainer>
     </div>
   );
 }
