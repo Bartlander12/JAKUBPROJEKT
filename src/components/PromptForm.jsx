@@ -4,6 +4,7 @@ import SuggestionInput from "./SuggestionInput/SuggestionInput";
 import TextAreaField from "./TextAreaField";
 import Toggle from "./Toggle";
 import OutputFormatSelect from "./output-format/OutputFormatSelect"
+import AdvancedSection from "./advanced/AdvancedSection"
 
 // jednoduché návrhy
 const PERSONA_SUGGESTIONS = [
@@ -147,8 +148,19 @@ export default function PromptForm({
         }}
       />
 
+      <AdvancedSection
+      requiredPhrases={form.requiredPhrases}
+      forbiddenPhrases={form.forbiddenPhrases}
+      additionalConstraints={form.additionalConstraints}
+      examples={form.examples}
+      cotEnabled={form.cotEnabled}
 
-
+      onRequiredPphrasesChange={(v) => update("requiredPhrases", v)}
+      onForbiddenPhrasesChange={(v) => update("forbiddenPhrases", v)}
+      onAdditionalConstraintsChange={(v) => update("additionalConstraints", v)}
+      onExamplesChange={(v) => update("examples", v)}
+      onCotChange={(v) => update("cotEnabled", v)}
+      />
 
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex flex-col gap-3">
         <Toggle
